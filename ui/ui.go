@@ -31,6 +31,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "backspace":
+			if len(m.list.FilterInput.Value()) != 0 {
+				m.list.FilterInput.SetValue(m.list.FilterInput.Value()[:len(m.list.FilterInput.Value())-1])
+			}
 			if m.dir == m.baseDir {
 				return m, nil
 			}
