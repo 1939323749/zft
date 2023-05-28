@@ -7,7 +7,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rotisserie/eris"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"zft/utils"
 )
 
@@ -45,6 +47,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.list.SetItems(items)
 			m.list.Title = filepath.Base(m.dir)
+			return m, nil
+		case " ":
+			if runtime.GOOS == "darwin" {
+				cmd := exec.Command("qlmanage", "-p", m.list.SelectedItem().FilterValue())
+				err := cmd.Run()
+				if err != nil {
+					Errors = eris.New(err.Error() + " " + cmd.String())
+					return m, tea.Quit
+				}
+			}
 			return m, nil
 		case "enter":
 			if m.list.SelectedItem() == nil {
