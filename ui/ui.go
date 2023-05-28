@@ -49,11 +49,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.Title = filepath.Base(m.dir)
 			return m, nil
 		case " ":
-			if runtime.GOOS == "darwin" {
+			if m.list.FilterState().String() == "filtering" {
+				m.list.FilterInput.SetValue(m.list.FilterInput.Value() + " ")
+				m.list.FilterInput.CursorEnd()
+				return m, nil
+			}
+			//?Cannot be used without adding m.list.FilteringEnabled()
+			if runtime.GOOS == "darwin" && (m.list.FilterState().String() == "filter applied" || m.list.FilteringEnabled()) {
 				cmd := exec.Command("qlmanage", "-p", m.list.SelectedItem().FilterValue())
 				err := cmd.Run()
 				if err != nil {
-					Errors = eris.New(err.Error() + " " + cmd.String())
+					Errors = eris.New(err.Error())
 					return m, tea.Quit
 				}
 			}
