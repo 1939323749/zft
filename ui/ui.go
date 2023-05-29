@@ -67,6 +67,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "enter":
+			if m.list.FilterState().String() == "filter applied" {
+				m.list.ResetFilter()
+			}
 			if m.list.SelectedItem() == nil {
 				Errors = eris.New("Selected item is nil.")
 			}
@@ -78,7 +81,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if info.IsDir() {
-				newitems, err := utils.GetFiles(m.list.SelectedItem().FilterValue())
+				newitems, err := utils.GetFiles(m.dir + "/" + m.list.SelectedItem().FilterValue())
 				if err != nil {
 					Errors = eris.New(err.Error())
 					return m, tea.Quit
