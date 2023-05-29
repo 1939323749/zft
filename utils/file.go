@@ -40,15 +40,13 @@ func GetFiles(dir string) ([]list.Item, error) {
 		return nil, fmt.Errorf("error reading directory: %w", err)
 	}
 
-	items := make([]list.Item, len(files))
-	for i, file := range files {
+	var validItems []list.Item
+	for _, file := range files {
 		fileInfo, err := file.Info()
 		if err != nil {
 			return nil, fmt.Errorf("error getting file info: %w", err)
 		}
 
-		size := formatSize(fileInfo.Size())
-		var desc string
 		if fileInfo.IsDir() {
 			if fileInfo.Mode().Perm()&(1<<2) == 0 {
 				continue
@@ -57,13 +55,13 @@ func GetFiles(dir string) ([]list.Item, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error reading directory: %w", err)
 			}
-			desc = fmt.Sprintf("Directory - %d items", len(innerFiles))
+			validItems = append(validItems, item{title: file.Name(), desc: fmt.Sprintf("Directory - %d items", len(innerFiles))})
 		} else {
-			desc = fileInfo.Mode().String() + " " + size
+			size := formatSize(fileInfo.Size())
+			validItems = append(validItems, item{title: file.Name(), desc: fileInfo.Mode().String() + " " + size})
 		}
-		items[i] = item{title: file.Name(), desc: desc}
 	}
-	return items, nil
+	return validItems, nil
 }
 
 func UploadFile(filePath string) error {
