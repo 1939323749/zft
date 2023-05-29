@@ -49,6 +49,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.Title = filepath.Base(m.dir)
 			return m, nil
 		case " ":
+			//Errors = eris.New(m.dir + "/" + m.list.SelectedItem().FilterValue())
+			//return m, tea.Quit
 			if m.list.FilterState().String() == "filtering" {
 				m.list.FilterInput.SetValue(m.list.FilterInput.Value() + " ")
 				m.list.FilterInput.CursorEnd()
@@ -56,7 +58,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			//?Cannot be used without adding m.list.FilteringEnabled()
 			if runtime.GOOS == "darwin" && (m.list.FilterState().String() == "filter applied" || m.list.FilteringEnabled()) {
-				cmd := exec.Command("qlmanage", "-p", m.list.SelectedItem().FilterValue())
+				cmd := exec.Command("qlmanage", "-p", m.dir+"/"+m.list.SelectedItem().FilterValue())
 				err := cmd.Run()
 				if err != nil {
 					Errors = eris.New(err.Error())
@@ -86,14 +88,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetItems(newitems)
 				return m, nil
 			} else {
-				abspath, err := filepath.Rel(m.baseDir, m.dir)
+				relpath, err := filepath.Rel(m.baseDir, m.dir)
 				if err != nil {
 					Errors = eris.New(err.Error())
 					return m, tea.Quit
 				}
 
-				if abspath != "." {
-					err = utils.UploadFile(abspath + "/" + m.list.SelectedItem().FilterValue())
+				if relpath != "." {
+					err = utils.UploadFile(relpath + "/" + m.list.SelectedItem().FilterValue())
 					if err != nil {
 						Errors = eris.New(err.Error())
 					}
