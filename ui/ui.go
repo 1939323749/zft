@@ -56,7 +56,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			//?Cannot be used without adding m.list.FilteringEnabled()
 			if runtime.GOOS == "darwin" && (m.list.FilterState().String() == "filter applied" || m.list.FilteringEnabled()) {
-				cmd := exec.Command("qlmanage", "-p", m.list.SelectedItem().FilterValue())
+				cmd := exec.Command("qlmanage", "-p", m.dir+"/"+m.list.SelectedItem().FilterValue())
 				err := cmd.Run()
 				if err != nil {
 					Errors = eris.New(err.Error())
@@ -65,6 +65,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "enter":
+			if m.list.FilterState().String() == "filter applied" {
+				m.list.ResetFilter()
+			}
 			if m.list.SelectedItem() == nil {
 				Errors = eris.New("Selected item is nil.")
 			}
@@ -76,7 +79,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if info.IsDir() {
-				newitems, err := utils.GetFiles(m.list.SelectedItem().FilterValue())
+				newitems, err := utils.GetFiles(m.dir + "/" + m.list.SelectedItem().FilterValue())
 				if err != nil {
 					Errors = eris.New(err.Error())
 					return m, tea.Quit
@@ -86,14 +89,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.list.SetItems(newitems)
 				return m, nil
 			} else {
-				abspath, err := filepath.Rel(m.baseDir, m.dir)
+				relpath, err := filepath.Rel(m.baseDir, m.dir)
 				if err != nil {
 					Errors = eris.New(err.Error())
 					return m, tea.Quit
 				}
 
-				if abspath != "." {
-					err = utils.UploadFile(abspath + "/" + m.list.SelectedItem().FilterValue())
+				if relpath != "." {
+					err = utils.UploadFile(relpath + "/" + m.list.SelectedItem().FilterValue())
 					if err != nil {
 						Errors = eris.New(err.Error())
 					}
