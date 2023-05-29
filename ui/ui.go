@@ -134,7 +134,11 @@ func Run() {
 		os.Exit(1)
 	}
 
-	items, _ := utils.GetFiles(dir)
+	items, err := utils.GetFiles(dir)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	// Create the list
 	m := model{

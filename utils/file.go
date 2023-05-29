@@ -50,6 +50,9 @@ func GetFiles(dir string) ([]list.Item, error) {
 		size := formatSize(fileInfo.Size())
 		var desc string
 		if fileInfo.IsDir() {
+			if fileInfo.Mode().Perm()&(1<<2) == 0 {
+				continue
+			}
 			innerFiles, err := ioutil.ReadDir(filepath.Join(dir, file.Name()))
 			if err != nil {
 				return nil, fmt.Errorf("error reading directory: %w", err)
