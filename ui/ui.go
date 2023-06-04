@@ -67,30 +67,40 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "enter":
-			if m.list.FilterState().String() == "filter applied" {
-				m.list.ResetFilter()
-			}
-			if m.list.SelectedItem() == nil {
+			// 如果选择的项目为空，则退出
+			selectedItem := m.list.SelectedItem()
+			if selectedItem == nil {
 				Errors = eris.New("Selected item is nil.")
+				return m, tea.Quit
 			}
-			info, err := os.Stat(filepath.Join(m.dir, m.list.SelectedItem().FilterValue()))
+
+			// 获取选择的项目的完整路径
+			selectedPath := filepath.Join(m.dir, selectedItem.FilterValue())
+			info, err := os.Stat(selectedPath)
 
 			if err != nil {
 				Errors = eris.New(err.Error())
 				return m, tea.Quit
 			}
 
+			// 如果选择的项目是目录
 			if info.IsDir() {
-				newitems, err := utils.GetFiles(m.dir + "/" + m.list.SelectedItem().FilterValue())
+				// 如果应用了过滤器，则重置过滤器
+				if m.list.FilterState().String() == "filter applied" {
+					m.list.ResetFilter()
+				}
+
+				newitems, err := utils.GetFiles(selectedPath)
 				if err != nil {
 					Errors = eris.New(err.Error())
 					return m, tea.Quit
 				}
-				m.list.Title = filepath.Base(m.list.SelectedItem().FilterValue())
-				m.dir = filepath.Join(m.dir, m.list.SelectedItem().FilterValue())
+				m.list.Title = filepath.Base(selectedItem.FilterValue())
+				m.dir = selectedPath
 				m.list.SetItems(newitems)
 				return m, nil
 			} else {
+				// 如果选择的项目是文件
 				relpath, err := filepath.Rel(m.baseDir, m.dir)
 				if err != nil {
 					Errors = eris.New(err.Error())
@@ -98,12 +108,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				if relpath != "." {
-					err = utils.UploadFile(relpath + "/" + m.list.SelectedItem().FilterValue())
+					err = utils.UploadFile(relpath + "/" + selectedItem.FilterValue())
 					if err != nil {
 						Errors = eris.New(err.Error())
 					}
 				} else {
-					err = utils.UploadFile(m.list.SelectedItem().FilterValue())
+					err = utils.UploadFile(selectedItem.FilterValue())
 					if err != nil {
 						Errors = eris.New(err.Error())
 					}
