@@ -40,11 +40,30 @@ func GetFiles(dir string) ([]list.Item, error) {
 		return nil, fmt.Errorf("error reading directory: %w", err)
 	}
 
+	settings, err := GetSettings()
+	if err != nil {
+		return nil, fmt.Errorf("error getting settings: %w", err)
+	}
+
 	var validItems []list.Item
 	for _, file := range files {
 		fileInfo, err := file.Info()
 		if err != nil {
 			return nil, fmt.Errorf("error getting file info: %w", err)
+		}
+
+		// Check if the file should be ignored
+		shouldIgnore := false
+		for _, pattern := range settings.Ignore {
+			if match, _ := filepath.Match(pattern, file.Name()); match {
+				shouldIgnore = true
+				break
+			}
+		}
+
+		// Skip the file if it should be ignored
+		if shouldIgnore {
+			continue
 		}
 
 		if fileInfo.IsDir() {
