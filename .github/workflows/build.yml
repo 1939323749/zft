@@ -1,0 +1,95 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build for Linux
+        env:
+          GOOS: linux
+          GOARCH: amd64
+        run: go build -o zft-linux-amd64 -v .
+
+      - name: Build for macOS
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+        run: go build -o zft-darwin-amd64 -v .
+
+      - name: Build for macOS ARM
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: go build -o zft-darwin-arm64 -v .
+
+      - name: Build for Windows
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: go build -o zft-windows-amd64.exe -v .
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Linux Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./zft-linux-amd64
+          asset_name: zft-linux-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./zft-darwin-amd64
+          asset_name: zft-darwin-amd64
+          asset_content_type: application/octet-stream
+          
+      - name: Upload macOS ARM Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./zft-darwin-arm64
+          asset_name: zft-darwin-arm64
+          asset_content_type: application/octet-stream
+          
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./zft-windows-amd64.exe
+          asset_name: zft-windows-amd64.exe
+          asset_content_type: application/octet-stream
