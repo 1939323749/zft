@@ -16,10 +16,11 @@ func main() {
 			fmt.Println(ui.Errors)
 		}
 		if utils.FileURL != "" {
+			fmt.Println("zft-v0.0.2")
 			fmt.Println("File uploaded successfully")
 			fmt.Println("File URL copied to clipboard:", utils.FileURL)
 		} else {
-			fmt.Println("Operation canceled.")
+			fmt.Println("Operation canceled. ")
 		}
 	}()
 }
