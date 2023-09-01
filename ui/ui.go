@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"github.com/1939323749/zft/utils"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -10,7 +11,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"zft/utils"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(0, 0)

@@ -1,6 +1,6 @@
-module zft
+module github.com/1939323749/zft
 
-go 1.20
+go 1.21
 
 require (
 	github.com/atotto/clipboard v0.1.4

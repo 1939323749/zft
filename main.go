@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"zft/ui"
-	"zft/utils"
+	"github.com/1939323749/zft/ui"
+	"github.com/1939323749/zft/utils"
 )
 
 func main() {
